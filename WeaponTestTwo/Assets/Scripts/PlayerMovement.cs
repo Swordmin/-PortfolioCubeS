@@ -11,44 +11,37 @@ public enum MovementState
 
 public class PlayerMovement : MonoBehaviour
 {
-    public Rigidbody rb;
 
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private MovementState _stateMovement;
 
-    public float jumpHeight;
-
-    public float speedNormal, maxSpeed;
+    [SerializeField] private float jumpHeight;
     private float rotateX, rotateY;
-    public float sensevity = 1;
-    public float speed, speedFall;
-    public float gravity = -9.81f;
-    public Vector3 velocity;
+    [SerializeField] private float _sensevity = 1;
+    [SerializeField] private float _speed;
+    [SerializeField] private float _gravity = -9.81f;
+    [SerializeField] private Vector3 _velocity;
 
-    public float speedByTime;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private float _groundDistance = 0.4f;
+    [SerializeField] private LayerMask _groundMask;
 
-    public Transform groundCheck;
-    public float groundDistance = 0.4f;
-    public LayerMask groundMask;
+    [SerializeField] private bool _isGrounded;
 
-    public bool isGrounded;
+    [SerializeField] private bool _freeze;
 
-    public float magnitude;
+    [SerializeField] private float _moveX, _moveZ;
 
-    public bool freeze;
-
-    float x, z;
-
-    public TextMeshProUGUI _textTime;
+    [SerializeField] private TextMeshProUGUI _textTime;
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        speedNormal = speed;
+        
     }
 
-    void Update()
+    private void Update()
     {
        
         if (Input.GetKeyDown(KeyCode.F)) 
@@ -63,102 +56,63 @@ public class PlayerMovement : MonoBehaviour
         {
             Time.timeScale = 0;
         }
-        if (freeze)
+        if (_freeze)
             Time.timeScale = Mathf.Lerp(Time.timeScale, 0, 1 * Time.unscaledDeltaTime);
 
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask,QueryTriggerInteraction.Collide);
-     
+        _isGrounded = Physics.CheckSphere(_groundCheck.position, _groundDistance, _groundMask,QueryTriggerInteraction.Collide);
 
-        try
+        if(_isGrounded && _velocity.y < 0) 
         {
-            if (rb.velocity.magnitude > 0.3f)
-            {
-                magnitude = rb.velocity.magnitude;
-                _stateMovement = MovementState.Walk;
-            }
-            else { _stateMovement = MovementState.State; }
-        }
-        catch { }
-
-        if(isGrounded && velocity.y < 0) 
-        {
-            velocity.y = -2;
+            _velocity.y = -2;
         }
 
-        rotateX -= Input.GetAxis("Mouse Y") * sensevity;
-        rotateY += Input.GetAxis("Mouse X") * sensevity;
+        rotateX -= Input.GetAxis("Mouse Y") * _sensevity;
+        rotateY += Input.GetAxis("Mouse X") * _sensevity;
         rotateX = Mathf.Clamp(rotateX, -70, 70);
 
         if (Input.GetKey(KeyCode.W)) 
         {
-             z = speed;
+             _moveZ = _speed;
         }
         if (Input.GetKey(KeyCode.S))
         {
-            z = -speed;
+            _moveZ = -_speed;
         }
         if (Input.GetKey(KeyCode.D)) 
         {
-            x = speed;
+            _moveX = _speed;
         }       
         if (Input.GetKey(KeyCode.A)) 
         {
-            x = -speed;
+            _moveX = -_speed;
         }
 
 
-        x *= Time.unscaledDeltaTime;
-        z *= Time.unscaledDeltaTime;
+        _moveX *= Time.unscaledDeltaTime;
+        _moveZ *= Time.unscaledDeltaTime;
 
         cameraTransform.localRotation = Quaternion.Euler(rotateX, 0, 0);
         transform.rotation = Quaternion.Euler(0, rotateY, 0);
 
-        velocity.y += gravity * Time.unscaledDeltaTime;
+        _velocity.y += _gravity * Time.unscaledDeltaTime;
 
-        GetComponent<CharacterController>().Move((transform.right * x + transform.forward * z));
-        GetComponent<CharacterController>().Move(velocity * Time.unscaledDeltaTime);
+        GetComponent<CharacterController>().Move((transform.right * _moveX + transform.forward * _moveZ));
+        GetComponent<CharacterController>().Move(_velocity * Time.unscaledDeltaTime);
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) 
+        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded) 
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
+            _velocity.y = Mathf.Sqrt(jumpHeight * -2 * _gravity);
         }
 
-        #region old
-        /*
-        if (Input.GetKey(KeyCode.W))
-        {
-            rb.AddForce(rb.transform.forward * speedNormal, ForceMode.Force);
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            rb.AddForce(-rb.transform.forward * speedNormal, ForceMode.Force);
-        }
-
-        if (Input.GetKey(KeyCode.A))
-        {
-            rb.AddForce(-rb.transform.right * speedNormal, ForceMode.Force);
-        }
-        else if (Input.GetKey(KeyCode.D))   
-        {
-            rb.AddForce(rb.transform.right * speedNormal, ForceMode.Force);
-        }
-
-        if(!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D)) 
-        {
-            speedNormal = 0;
-        }
-        else { speedNormal = speed; }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            rb.AddForce(rb.transform.up * _jumpHeight, ForceMode.Impulse);
-        }*/
-
-        #endregion
     }
 
-    public MovementState SetStateMovement() 
+
+    private MovementState SetStateMovement() 
     {
         return _stateMovement;
+    }
+    public void SetGroundCheck(bool value) 
+    {
+       
     }
 }
