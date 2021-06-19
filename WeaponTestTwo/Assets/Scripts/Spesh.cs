@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ public class Spesh : MonoBehaviour
 
     public float radius;
     public float force;
+
 
     // Start is called before the first frame update
     void Start()
@@ -30,9 +32,9 @@ public class Spesh : MonoBehaviour
     private void Boom() 
     {
         Collider[] overCollider = Physics.OverlapSphere(transform.position, radius);
-        for(int i = 0; i < overCollider.Length; i++) 
+        foreach(Collider collider in overCollider.Where(coll => coll != gameObject.GetComponent<CapsuleCollider>()))
         {
-            Rigidbody rigidbody = overCollider[i].attachedRigidbody;
+            Rigidbody rigidbody = collider.GetComponent<Rigidbody>();
             if (rigidbody) 
             {
                 rigidbody.AddExplosionForce(force, transform.position, radius, 1f);

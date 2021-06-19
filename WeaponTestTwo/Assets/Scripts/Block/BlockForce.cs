@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,16 +27,24 @@ public class BlockForce : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.J))
             active = active ? false : true;
-
         if (active)
         {
-            foreach (Rigidbody body in _bodys)
+            foreach (Rigidbody body in _bodys.Where(obj => obj.transform.name != "Player")) 
             {
-                Vector3 dirrectionToCube = (transform.position - body.transform.position).normalized;
-
-                float distance = (transform.position - body.position).magnitude;
-                float st = 3f * body.mass * GetComponentInParent<Rigidbody>().mass / (distance);
-                body.AddForce(((dirrectionToCube * st)) * Time.deltaTime);
+                if (Vector3.Distance(transform.position, body.gameObject.transform.position) > 20)
+                {
+                    Vector3 dirrectionToCube = ((transform.position - body.transform.position).normalized);
+                    float distance = (transform.position - body.position).magnitude;
+                    float st = 3f * body.mass * GetComponentInParent<Rigidbody>().mass / (distance);
+                    body.AddForce(((dirrectionToCube * st)) * Time.deltaTime);
+                }
+                else 
+                {
+                    Vector3 dirrectionToCube = ((transform.position - body.transform.position).normalized);
+                    float distance = (transform.position - body.position).magnitude;
+                    float st = 3f * body.mass * GetComponentInParent<Rigidbody>().mass / (distance);
+                    body.AddForce(-((dirrectionToCube * st))/3 * Time.deltaTime);
+                }
             }
         }
     }
